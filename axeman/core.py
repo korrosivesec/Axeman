@@ -15,6 +15,10 @@ import aiohttp
 import aioprocessing
 import logging
 import locale
+import pandas
+import pyarrow.csv as pv
+import pyarrow.parquet as pq
+from io import StringIO
 
 try:
     locale.setlocale(locale.LC_ALL, 'en_US')
@@ -168,8 +172,8 @@ def process_worker(result_info):
     if not result_info:
         return
     try:
-        csv_storage = result_info['log_dir']
-        csv_file = "{}/{}-{}.csv".format(csv_storage, result_info['start'], result_info['end'])
+        parquet_storage = result_info['log_dir']
+        parquet_file = "{}/{}-{}.parquet".format(parquet_storage, result_info['start'], result_info['end'])
 
         lines = []
 
@@ -221,11 +225,14 @@ def process_worker(result_info):
                 ]) + "\n"
             )
 
-        print("[{}] Finished, writing CSV...".format(os.getpid()))
+        print("[{}] Finished, writing Parquet...".format(os.getpid()))
 
-        with open(csv_file, 'w', encoding='utf8') as f:
-            f.write("".join(lines))
-        print("[{}] CSV {} written!".format(os.getpid(), csv_file))
+        df = pv.read_csv(StringIO("".join(lines)))
+        pq.write_table(df, parquet_file.replace('csv', 'parquet'))
+
+       #with open(csv_file, 'w', encoding='utf8') as f:
+       #     f.write("".join(lines))
+       # print("[{}] CSV {} written!".format(os.getpid(), csv_file))
 
     except Exception as e:
         print("========= EXCEPTION =========")
