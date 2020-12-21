@@ -15,10 +15,10 @@ import aiohttp
 import aioprocessing
 import logging
 import locale
-import pandas
+import pyarrow as pa
 import pyarrow.csv as pv
 import pyarrow.parquet as pq
-from io import StringIO
+from io import BytesIO
 
 try:
     locale.setlocale(locale.LC_ALL, 'en_US')
@@ -225,10 +225,21 @@ def process_worker(result_info):
                 ]) + "\n"
             )
 
-        print("[{}] Finished, writing Parquet...".format(os.getpid()))
+        print("[{}] Finished processing, writing Parquet...".format(os.getpid()))
 
-        df = pv.read_csv(StringIO("".join(lines)))
-        pq.write_table(df, parquet_file.replace('csv', 'parquet'))
+        df = pv.read_csv(BytesIO("".join(lines).encode('utf-8')))
+
+        cert_schema = pa.schema([
+            pa.field("ctl_log", "string", False),
+            pa.field("index", "string", False),
+            pa.field("chain_hash", "string", False),
+            pa.field("cert_data", "string", False),
+            pa.field("domains", "string", False),
+            pa.field("not_before", "timestamp", False),
+            pa.field("not_after", "timestamp", False)])
+
+
+        pq.write_table(df.cast(cert_schema), parquet_file)
 
        #with open(csv_file, 'w', encoding='utf8') as f:
        #     f.write("".join(lines))
