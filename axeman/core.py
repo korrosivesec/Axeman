@@ -220,8 +220,8 @@ def process_worker(result_info):
                     chain_hash,
                     cert_data['leaf_cert']['as_der'],
                     '\"' + ' '.join(cert_data['leaf_cert']['all_domains']) + '\"',  # wrap in quotes in case there is a comma in the field
-                    str(cert_data['leaf_cert']['not_before']),
-                    str(cert_data['leaf_cert']['not_after'])
+                    int(cert_data['leaf_cert']['not_before']),
+                    int(cert_data['leaf_cert']['not_after'])
                 ]) + "\n"
             )
 
