@@ -227,7 +227,7 @@ def process_worker(result_info):
 
         print("[{}] Finished processing, writing Parquet...".format(os.getpid()))
 
-        df = pv.read_csv(BytesIO("".join(lines).encode('utf-8')))
+        df = pv.read_csv(BytesIO("".join(lines).encode('utf-8')), read_options=['ctl_log', 'index', 'chain_hash', 'cert_data', 'domains', 'not_before', 'not_after'])
 
         cert_schema = pa.schema([
             pa.field("ctl_log", "string", False),
