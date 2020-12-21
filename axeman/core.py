@@ -235,8 +235,8 @@ def process_worker(result_info):
             pa.field("chain_hash", "string", False),
             pa.field("cert_data", "string", False),
             pa.field("domains", "string", False),
-            pa.field("not_before", "timestamp", False),
-            pa.field("not_after", "timestamp", False)])
+            pa.field("not_before", "timestamp[s]", False),
+            pa.field("not_after", "timestamp[s]", False)])
 
 
         pq.write_table(df.cast(cert_schema), parquet_file)
