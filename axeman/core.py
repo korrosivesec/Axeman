@@ -167,7 +167,7 @@ async def processing_coro(download_results_queue, output_dir="/tmp"):
 
     await process_pool.coro_join()
 
-def process_worker(result_info):
+async def process_worker(result_info):
     logging.debug("Worker {} starting...".format(os.getpid()))
     if not result_info:
         return
@@ -239,7 +239,7 @@ def process_worker(result_info):
             pa.field("not_after", "timestamp[s]", False)])
 
 
-        pq.write_table(df.cast(cert_schema), parquet_file)
+        await pq.write_table(df.cast(cert_schema), parquet_file)
 
        #with open(csv_file, 'w', encoding='utf8') as f:
        #     f.write("".join(lines))
