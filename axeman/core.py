@@ -128,6 +128,15 @@ async def retrieve_certificates(loop, url=None, ctl_offset=0, output_directory='
 
             logging.info("Finished downloading and processing {}".format(log_info['url']))
 
+async def make_dirs(entries_iter, output_dir):
+    for entry in entries_iter:
+        csv_storage = '{}/certificates/{}'.format(output_dir, entry['log_info']['url'].replace('/', '_'))
+        if not os.path.exists(csv_storage):
+            print("[{}] Making dir...".format(os.getpid()))
+            os.makedirs(csv_storage)
+        entry['log_dir']=csv_storage
+
+
 async def processing_coro(download_results_queue, output_dir="/tmp"):
     logging.info("Starting processing coro and process pool")
     process_pool = aioprocessing.AioPool(initargs=(output_dir,))
@@ -147,13 +156,7 @@ async def processing_coro(download_results_queue, output_dir="/tmp"):
 
         logging.debug("Got a chunk of {}. Mapping into process pool".format(process_pool.pool_workers))
 
-
-        for entry in entries_iter:
-            csv_storage = '{}/certificates/{}'.format(output_dir, entry['log_info']['url'].replace('/', '_'))
-            if not await os.path.exists(csv_storage):
-                print("[{}] Making dir...".format(os.getpid()))
-                await os.makedirs(csv_storage)
-            entry['log_dir']=csv_storage
+        await make_dirs(entries_iter, output_dir)
 
         if len(entries_iter) > 0:
             await process_pool.coro_map(process_worker, entries_iter)
